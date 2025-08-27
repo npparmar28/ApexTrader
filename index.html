@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Live Intraday Trading Simulator</title>
+  <title>Pyramid Trader Pro</title>
   
   <!-- Tailwind CSS for styling -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,6 +16,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="Advanced pyramiding trading strategy calculator with live price simulation">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <style>
     /* Custom styles and theme configuration */
@@ -82,6 +91,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       transform: translateX(100%);
       transition: transform 0.3s ease;
+      max-width: 320px;
     }
     
     .notification.show {
@@ -137,6 +147,43 @@
       50% { opacity: 0.4; }
       100% { opacity: 1; }
     }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      .price-ticker {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .index-price {
+        width: 100%;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      
+      .mobile-optimized-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+    }
+    
+    /* Install button */
+    .install-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-gray-200 antialiased">
@@ -149,6 +196,15 @@
     </svg>
   </div>
 
+  <!-- Install Button (initially hidden) -->
+  <button id="installButton" class="install-btn hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="7 10 12 15 17 10"></polyline>
+      <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+  </button>
+
   <!-- Main Application Wrapper -->
   <main id="mainContent" class="max-w-6xl mx-auto p-2 sm:p-4 opacity-0 transition-opacity duration-300">
     
@@ -156,7 +212,7 @@
     <header class="flex items-center justify-between mb-4 px-2">
       <h1 class="text-xl sm:text-2xl font-bold text-gray-100 flex items-center">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-blue-400"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-        Live Intraday Trading Simulator
+        Pyramid Trader Pro
       </h1>
       <div class="flex items-center">
         <span id="saveStatus" class="save-indicator text-xs font-medium bg-gray-700 text-green-400 px-2 py-1 rounded-full mr-2">Auto-save: ON</span>
@@ -167,17 +223,17 @@
       </div>
     </header>
 
-    <!-- Live Price Ticker -->
-    <div class="mb-4 px-2 bg-gray-800 rounded-lg p-3 flex items-center justify-between">
-      <div class="flex items-center">
-        <span class="text-sm text-gray-400 mr-2">NIFTY 50:</span>
-        <span id="niftyPrice" class="text-xl font-bold text-white">17,850.25</span>
-        <span id="niftyChange" class="ml-2 text-sm font-medium text-green-400">+42.75 (+0.24%)</span>
+    <!-- Live Price Ticker - Mobile Optimized -->
+    <div class="mb-4 px-2 bg-gray-800 rounded-lg p-3 price-ticker flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="index-price flex items-center justify-between sm:justify-start w-full sm:w-auto mb-2 sm:mb-0">
+        <span class="text-sm text-gray-400 mr-2">NIFTY:</span>
+        <span id="niftyPrice" class="text-lg font-bold text-white">17,850.25</span>
+        <span id="niftyChange" class="ml-2 text-sm font-medium text-green-400">+42.75</span>
       </div>
-      <div class="flex items-center">
+      <div class="index-price flex items-center justify-between sm:justify-start w-full sm:w-auto">
         <span class="text-sm text-gray-400 mr-2">BANK NIFTY:</span>
-        <span id="bankNiftyPrice" class="text-xl font-bold text-white">41,382.60</span>
-        <span id="bankNiftyChange" class="ml-2 text-sm font-medium text-red-400">-128.40 (-0.31%)</span>
+        <span id="bankNiftyPrice" class="text-lg font-bold text-white">41,382.60</span>
+        <span id="bankNiftyChange" class="ml-2 text-sm font-medium text-red-400">-128.40</span>
       </div>
     </div>
 
@@ -211,7 +267,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label for="scriptName" class="text-sm font-medium text-gray-400 mb-1 block">Script Name</label>
-              <select id="scriptName" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus-ring">
+              <select id="scriptName" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus-ring mobile-optimized-input">
                 <option value="RELIANCE">RELIANCE</option>
                 <option value="TATASTEEL">TATASTEEL</option>
                 <option value="HDFCBANK">HDFCBANK</option>
@@ -223,14 +279,14 @@
             <div>
               <label for="currentPrice" class="text-sm font-medium text-gray-400 mb-1 block">Current Price</label>
               <div class="relative">
-                <input type="number" id="currentPrice" inputmode="decimal" placeholder="Live price" step="0.05" class="w-full bg-gray-900 border border-gray-600 rounded-lg pl-8 pr-3 py-2 text-gray-200 focus-ring">
+                <input type="number" id="currentPrice" inputmode="decimal" placeholder="Live price" step="0.05" class="w-full bg-gray-900 border border-gray-600 rounded-lg pl-8 pr-3 py-2 text-gray-200 focus-ring mobile-optimized-input">
                 <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">₹</span>
               </div>
             </div>
             <div>
               <label for="risk" class="text-sm font-medium text-gray-400 mb-1 block">Max Risk</label>
               <div class="relative">
-                <input type="number" id="risk" inputmode="decimal" value="1000" step="0.01" class="w-full bg-gray-900 border border-gray-600 rounded-lg pl-8 pr-3 py-2 text-gray-200 focus-ring">
+                <input type="number" id="risk" inputmode="decimal" value="1000" step="0.01" class="w-full bg-gray-900 border border-gray-600 rounded-lg pl-8 pr-3 py-2 text-gray-200 focus-ring mobile-optimized-input">
                 <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">₹</span>
               </div>
             </div>
@@ -243,6 +299,13 @@
                 <option value="10">10 Levels</option>
               </select>
             </div>
+            <div class="sm:col-span-2">
+              <label for="executionMode" class="text-sm font-medium text-gray-400 mb-1 block">Execution Mode</label>
+              <select id="executionMode" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus-ring">
+                <option value="manual">Manual</option>
+                <option value="auto">Automatic</option>
+              </select>
+            </div>
           </div>
         </section>
 
@@ -252,11 +315,11 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label for="entryPrice" class="text-sm font-medium text-gray-400 mb-1 block">Initial Entry Price</label>
-                <input type="number" id="entryPrice" placeholder="Entry" step="0.05" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus-ring">
+                <input type="number" id="entryPrice" placeholder="Entry" step="0.05" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus-ring mobile-optimized-input">
               </div>
               <div>
                 <label for="stoplossPrice" class="text-sm font-medium text-gray-400 mb-1 block">Stoploss Price</label>
-                <input type="number" id="stoplossPrice" placeholder="Stoploss" step="0.05" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus-ring">
+                <input type="number" id="stoplossPrice" placeholder="Stoploss" step="0.05" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus-ring mobile-optimized-input">
               </div>
           </div>
           <div class="bg-gray-900 rounded-lg p-3 space-y-2 text-sm">
@@ -283,6 +346,9 @@
         <section class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-4">
             <h2 class="text-lg font-semibold text-gray-100 mb-2">Pyramid Entries</h2>
             <p class="text-xs text-gray-400 mb-4">Enter the price for each distributed entry level. Values are calculated automatically.</p>
+            <button id="saveEntries" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 text-sm rounded-lg transition-colors duration-200 focus-ring mb-3 hidden">
+              Save Entry Changes
+            </button>
             <div id="entriesContainer" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                 <!-- Entry cards will be dynamically inserted here -->
             </div>
@@ -375,7 +441,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // --- CONFIGURATION ---
-  const STORAGE_KEY_PREFIX = 'intradayTradingSimulator';
+  const STORAGE_KEY_PREFIX = 'pyramidTraderPro';
   const DEFAULT_STATE = {
     entries: [],
     isLong: true,
@@ -385,9 +451,14 @@ document.addEventListener('DOMContentLoaded', () => {
     currentPrice: '',
     scriptName: 'RELIANCE',
     levelType: '5',
+    executionMode: 'manual',
+    targetType: 'rr',
+    targetValue: 2,
     entryPrice: '',
     stoplossPrice: '',
     totalShares: 0,
+    executedEntries: [],
+    portfolio: { open: [], closed: [] }
   };
   
   // Distribution ratios for different level types
@@ -417,12 +488,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let priceUpdateInterval = null;
   let niftyPrice = 17850.25;
   let bankNiftyPrice = 41382.60;
+  let deferredPrompt = null;
+  let entryChangesPending = false;
 
   // --- ELEMENT CACHING ---
   const els = {
     // Main layout
     loading: document.getElementById('loading'),
     mainContent: document.getElementById('mainContent'),
+    installButton: document.getElementById('installButton'),
     
     // Tabs
     tabsContainer: document.getElementById('tabsContainer'),
@@ -435,6 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentPrice: document.getElementById('currentPrice'),
     risk: document.getElementById('risk'),
     levelType: document.getElementById('levelType'),
+    executionMode: document.getElementById('executionMode'),
 
     // Sizing Card
     entryPrice: document.getElementById('entryPrice'),
@@ -447,6 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Entries
     entriesContainer: document.getElementById('entriesContainer'),
+    saveEntries: document.getElementById('saveEntries'),
 
     // Summary
     summaryPosition: document.getElementById('summaryPosition'),
@@ -632,15 +708,11 @@ document.addEventListener('DOMContentLoaded', () => {
     els.niftyPrice.textContent = niftyPrice.toFixed(2);
     els.bankNiftyPrice.textContent = bankNiftyPrice.toFixed(2);
     
-    // Calculate percentage changes
-    const niftyPercent = (niftyChange / (niftyPrice - niftyChange)) * 100;
-    const bankNiftyPercent = (bankNiftyChange / (bankNiftyPrice - bankNiftyChange)) * 100;
-    
     // Update change indicators
-    els.niftyChange.textContent = `${niftyChange >= 0 ? '+' : ''}${niftyChange.toFixed(2)} (${niftyPercent >= 0 ? '+' : ''}${niftyPercent.toFixed(2)}%)`;
+    els.niftyChange.textContent = `${niftyChange >= 0 ? '+' : ''}${niftyChange.toFixed(2)}`;
     els.niftyChange.className = `ml-2 text-sm font-medium ${niftyChange >= 0 ? 'text-green-400' : 'text-red-400'}`;
     
-    els.bankNiftyChange.textContent = `${bankNiftyChange >= 0 ? '+' : ''}${bankNiftyChange.toFixed(2)} (${bankNiftyPercent >= 0 ? '+' : ''}${bankNiftyPercent.toFixed(2)}%)`;
+    els.bankNiftyChange.textContent = `${bankNiftyChange >= 0 ? '+' : ''}${bankNiftyChange.toFixed(2)}`;
     els.bankNiftyChange.className = `ml-2 text-sm font-medium ${bankNiftyChange >= 0 ? 'text-green-400' : 'text-red-400'}`;
     
     // Flash animation for price changes
@@ -777,6 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
     els.currentPrice.value = state.currentPrice;
     els.risk.value = state.risk;
     els.levelType.value = state.levelType;
+    els.executionMode.value = state.executionMode;
     els.entryPrice.value = state.entryPrice;
     els.stoplossPrice.value = state.stoplossPrice;
     
@@ -810,8 +883,12 @@ document.addEventListener('DOMContentLoaded', () => {
     els.entriesContainer.innerHTML = '';
     if (state.entries.length === 0) {
         els.entriesContainer.innerHTML = `<div class="text-center text-sm text-gray-500 py-4">No entries distributed.</div>`;
+        els.saveEntries.classList.add('hidden');
         return;
     }
+    
+    // Show save button if there are pending changes
+    els.saveEntries.classList.toggle('hidden', !entryChangesPending);
     
     state.entries.forEach((entry, index) => {
       const entryValue = entry.price && entry.quantity ? entry.quantity * entry.price : 0;
@@ -843,6 +920,39 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       els.entriesContainer.appendChild(entryDiv);
     });
+    
+    // Add event listeners to entry price inputs
+    document.querySelectorAll('.entry-price').forEach(input => {
+      input.addEventListener('input', () => {
+        entryChangesPending = true;
+        els.saveEntries.classList.remove('hidden');
+        
+        // Update value display
+        const index = parseInt(input.dataset.index);
+        const price = parseFloat(input.value) || 0;
+        const valueEl = input.closest('.grid').querySelector('.entry-value');
+        if(valueEl && state.entries[index]) {
+            const entryValue = state.entries[index].quantity * price;
+            valueEl.textContent = cur(entryValue);
+        }
+      });
+    });
+  }
+  
+  function saveEntryChanges() {
+    document.querySelectorAll('.entry-price').forEach(input => {
+      const index = parseInt(input.dataset.index);
+      const price = parseFloat(input.value) || 0;
+      if (state.entries[index]) {
+        state.entries[index].price = price;
+      }
+    });
+    
+    entryChangesPending = false;
+    els.saveEntries.classList.add('hidden');
+    computeAndRender();
+    triggerAutoSave();
+    showNotification('Entry prices updated successfully', 'success');
   }
 
   function computeAndRender() {
@@ -1028,6 +1138,42 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
   
+  // --- PWA INSTALLATION ---
+  function initializePWA() {
+    // Listen for beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      // Show the install button
+      els.installButton.classList.remove('hidden');
+      
+      // Add click event to install button
+      els.installButton.addEventListener('click', async () => {
+        // Hide the install button
+        els.installButton.classList.add('hidden');
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        // We've used the prompt, and can't use it again, throw it away
+        deferredPrompt = null;
+      });
+    });
+    
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then((registration) => {
+          console.log('SW registered: ', registration);
+        })
+        .catch((registrationError) => {
+          console.log('SW registration failed: ', registrationError);
+        });
+    }
+  }
+
   // --- EVENT HANDLERS ---
   function handleEntryInputChange(e) {
       if (e.target.classList.contains('entry-price')) {
@@ -1071,6 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
           state.entryPrice = '';
           state.stoplossPrice = '';
           state.currentPrice = '';
+          entryChangesPending = false;
           renderUI();
           triggerAutoSave();
       }
@@ -1156,6 +1303,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.currentPrice = els.currentPrice.value;
       state.risk = parseFloat(els.risk.value) || 1000;
       state.levelType = els.levelType.value;
+      state.executionMode = els.executionMode.value;
       state.entryPrice = els.entryPrice.value;
       state.stoplossPrice = els.stoplossPrice.value;
       
@@ -1191,7 +1339,7 @@ document.addEventListener('DOMContentLoaded', () => {
           renameBtn.onclick = (e) => { e.stopPropagation(); handleRenameTab(); };
           
           const deleteBtn = document.createElement('button');
-          deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+          deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
           deleteBtn.className = 'p-1 bg-red-600 hover:bg-red-500 rounded-full transition-colors';
           deleteBtn.onclick = (e) => { e.stopPropagation(); handleDeleteTab(); };
           
@@ -1244,14 +1392,18 @@ document.addEventListener('DOMContentLoaded', () => {
     els.distributeBtn.addEventListener('click', distributeQuantities);
     els.reset.addEventListener('click', handleReset);
     els.addSample.addEventListener('click', handleAddSample);
-    els.entriesContainer.addEventListener('input', handleEntryInputChange);
+    els.saveEntries.addEventListener('click', saveEntryChanges);
     els.levelType.addEventListener('change', () => {
       state.entries = []; // Clear entries when level type changes
+      entryChangesPending = false;
       renderEntries();
       computeAndRender();
       triggerAutoSave();
     });
-    
+    els.executionMode.addEventListener('change', () => {
+      triggerAutoSave();
+    });
+
     // Update current price when script changes
     els.scriptName.addEventListener('change', () => {
       const script = els.scriptName.value;
@@ -1294,6 +1446,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start live price simulation
     startLivePriceSimulation();
     
+    // Initialize PWA functionality
+    initializePWA();
+    
     // Save before page unload
     window.addEventListener('beforeunload', () => {
       saveCurrentTabState();
@@ -1302,16 +1457,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   init();
 });
-
-// --- PWA SERVICE WORKER (Optional, for offline capability) ---
-if ("serviceWorker" in navigator) {
-  window.addEventListener('load', () => {
-    // A simple service worker can be registered here to cache assets
-    // For this self-contained file, a service worker is less critical
-    // but can be added for a full offline PWA experience.
-    // navigator.serviceWorker.register('/sw.js').catch(console.error);
-  });
-}
 </script>
 </body>
 </html>
