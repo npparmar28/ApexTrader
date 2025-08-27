@@ -1,0 +1,52 @@
+{
+  name Advanced Trading Risk Manager,
+  short_name Trading Risk,
+  description An advanced trading tool to calculate pyramiding positions with automated execution.,
+  start_url ,
+  display standalone,
+  background_color #111827,
+  theme_color #111827,
+  orientation portrait,
+  icons [
+    {
+      src iconsicon-72.png,
+      sizes 72x72,
+      type imagepng
+    },
+    {
+      src iconsicon-96.png,
+      sizes 96x96,
+      type imagepng
+    },
+    {
+      src iconsicon-128.png,
+      sizes 128x128,
+      type imagepng
+    },
+    {
+      src iconsicon-144.png,
+      sizes 144x144,
+      type imagepng
+    },
+    {
+      src iconsicon-152.png,
+      sizes 152x152,
+      type imagepng
+    },
+    {
+      src iconsicon-192.png,
+      sizes 192x192,
+      type imagepng
+    },
+    {
+      src iconsicon-384.png,
+      sizes 384x384,
+      type imagepng
+    },
+    {
+      src iconsicon-512.png,
+      sizes 512x512,
+      type imagepng
+    }
+  ]
+}
